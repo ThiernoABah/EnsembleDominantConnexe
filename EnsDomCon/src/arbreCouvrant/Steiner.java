@@ -11,7 +11,6 @@ public class Steiner {
 	public Matrices K = null;
 	@SuppressWarnings("unchecked")
 	public ArrayList<Point> calculSteiner(ArrayList<Point> points, int edgeThreshold, ArrayList<Point> hitPoints) {
-		
 		/////////////// mets des labels sur mes points et hitspoint ////////////////////
 		ArrayList<LabelPt> pointsL = labelMyPts(points);
 		ArrayList<LabelPt> hitpointsL = new ArrayList<>();

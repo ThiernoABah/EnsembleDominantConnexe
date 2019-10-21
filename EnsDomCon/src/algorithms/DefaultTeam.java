@@ -10,6 +10,8 @@ import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 import arbreCouvrant.Steiner;
 
@@ -18,10 +20,12 @@ public class DefaultTeam {
 	  ArrayList<Point> clone = (ArrayList<Point>) points.clone();
 		// pretraitement pour trouver la plus grande composante connexe ou alors l'input
 		// est un graphe connexe
-		ArrayList<Point> result = MIS(clone, edgeThreshold);
+		ArrayList<Point> result = MIS2(clone, edgeThreshold);
+//	    ArrayList<Point> result = gloutonNaif(clone, edgeThreshold);
+		System.out.println(isMIS(result, points, edgeThreshold));
 		result = calculSteiner(clone, result, edgeThreshold);
-		System.out.println(isTree(clone, result, edgeThreshold));
-		System.out.println(isValid(clone, result, edgeThreshold));
+		System.out.println(isMIS(result, points, edgeThreshold));
+		
 		return result;
 	}
 	
@@ -48,6 +52,107 @@ public class DefaultTeam {
 			clonePoints.removeAll(voisins);
 		}
 		return res;
+	}
+	
+	public ArrayList<Point> MIS2(ArrayList<Point> points, int edgeThreshold) {
+		ArrayList<Point> res = new ArrayList<>();
+		
+		@SuppressWarnings("unchecked")
+		
+		ArrayList<Point> clonePoints = (ArrayList<Point>) points.clone();
+		Collections.shuffle(clonePoints);
+		
+		Point start = clonePoints.remove(0);
+		res.add(start);
+		
+		while (!clonePoints.isEmpty()) {
+			ArrayList<Point> voisins = neighbor(start, clonePoints, edgeThreshold);
+			
+			if(voisins.size()==0) {
+				for(int i = 0;i<clonePoints.size();i++) {
+					voisins = neighbor(clonePoints.get(i), points, edgeThreshold);
+					boolean canContinue = true;
+					for(Point p : voisins) {
+						if(res.contains(p)) {
+							canContinue = false;
+							break;
+						}
+					}
+					if(canContinue) {
+						start = clonePoints.remove(i);
+						res.add(start);
+						break;
+					}
+				}
+				continue;
+			}
+			Point next = voisins.get(0);
+			int max = 0;
+			for (Point p : voisins) {
+				if(p.equals(start)) {
+					continue;
+				}
+				if (neighbor(p, points, edgeThreshold).size() > max) {
+					max = neighbor(p, points, edgeThreshold).size();
+					next = p;
+				}
+			}
+			clonePoints.removeAll(voisins);
+			voisins = neighbor(next, clonePoints, edgeThreshold);
+			max = 0;
+			for (Point p : voisins) {
+				if (neighbor(p, points, edgeThreshold).size() > max) {
+					max = neighbor(p, points, edgeThreshold).size();
+					start = p;
+				}
+			}
+			res.add(start);
+		}
+		return res;
+	}
+	public boolean isMIS(ArrayList<Point> MIS, ArrayList<Point> points,int edgeThreshold) {
+		if(!isValid(points, MIS, edgeThreshold)) {
+			return false;
+		}
+		ArrayList<Point> voisins = new ArrayList<Point>();
+		Set<Point> deuxVoisins = new HashSet<Point>();
+		for(Point p : MIS) {
+			voisins = neighbor(p, points, edgeThreshold);
+			
+			for(Point v : voisins) {
+				if(MIS.contains(v)) {
+					return false;
+				}
+				deuxVoisins.addAll(neighbor(v, points, edgeThreshold));
+			}
+			
+			boolean ok = false;
+			deuxVoisins.remove(p);	
+			deuxVoisins.removeAll(voisins);
+			for(Point v : deuxVoisins) {
+				if(MIS.contains(v)) {
+					ok = true;
+					break;
+				}
+			}
+			if(!ok) {
+				return false;
+			}
+		}
+		return true;
+	}
+	public ArrayList<ColoredNode> colorMyPts(ArrayList<Point> MIS, ArrayList<Point> points){
+		 ArrayList<ColoredNode> res = new ArrayList<>(points.size());
+		 
+		 for(Point p : points) {
+			 if(MIS.contains(p)) {
+				 res.add(new ColoredNode(p,Color.BLACK));
+			 }
+			 else {
+				 res.add(new ColoredNode(p));
+			 }
+		 }
+		 return res;	
 	}
 	
 	public ArrayList<Point> gloutonNaif(ArrayList<Point> points, int edgeThreshold) {
