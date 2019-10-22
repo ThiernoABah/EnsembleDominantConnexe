@@ -20,8 +20,8 @@ public class DefaultTeam {
 	  ArrayList<Point> clone = (ArrayList<Point>) points.clone();
 		// pretraitement pour trouver la plus grande composante connexe ou alors l'input
 		// est un graphe connexe
-		ArrayList<Point> result = MIS2(clone, edgeThreshold);
-//	    ArrayList<Point> result = gloutonNaif(clone, edgeThreshold);
+//		ArrayList<Point> result = MIS2(clone, edgeThreshold);
+	    ArrayList<Point> result = gloutonNaif(clone, edgeThreshold);
 		System.out.println(isMIS(result, points, edgeThreshold));
 		result = calculSteiner(clone, result, edgeThreshold);
 		System.out.println(isMIS(result, points, edgeThreshold));
@@ -129,6 +129,7 @@ public class DefaultTeam {
 			boolean ok = false;
 			deuxVoisins.remove(p);	
 			deuxVoisins.removeAll(voisins);
+			System.out.println(deuxVoisins.size());
 			for(Point v : deuxVoisins) {
 				if(MIS.contains(v)) {
 					ok = true;
@@ -138,6 +139,7 @@ public class DefaultTeam {
 			if(!ok) {
 				return false;
 			}
+			deuxVoisins = new HashSet<Point>();
 		}
 		return true;
 	}
