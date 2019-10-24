@@ -3,6 +3,7 @@ package algorithms;
 import java.awt.Point;
 
 public class ColoredNode {
+	public static int id = 0;
 	public Point p;
 	public Color color;
 	public int idCompenent = -1;

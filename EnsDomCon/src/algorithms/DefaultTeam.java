@@ -62,10 +62,9 @@ public class DefaultTeam {
 		ArrayList<ColoredNode> coloredPts = colorMyPts(points);
 		ArrayList<ColoredNode> black = new ArrayList<>();
 		ArrayList<ColoredNode> orange = new ArrayList<>();
-
-		int max = 0;
-
 		ArrayList<ColoredNode> voisin = new ArrayList<>();
+		
+		int max = 0;
 		ColoredNode start = coloredPts.get(0);
 		for (ColoredNode p : coloredPts) {
 			if (whiteNeighbor(p, coloredPts, edgeThreshold).size() > max) {
@@ -131,6 +130,70 @@ public class DefaultTeam {
 			}
 		}
 		return decolorMyPts(black);
+	}
+	
+	public ArrayList<Point> algoA(ArrayList<Point> MIS, ArrayList<Point> points, int edgeThreshold){
+		ArrayList<ColoredNode> coloredPts = colorMyPtsAlgoA(MIS,points);
+		ColoredNode pt = coloredPts.get(0);
+		for( int i= 5;i>1;i--) {
+			pt = greyNodeWithIBlack(coloredPts, edgeThreshold, i);
+			if(pt == null) {
+				continue;
+			}
+			
+		}
+		return points;
+		
+	}
+	
+	public ColoredNode greyNodeWithIBlack(ArrayList<ColoredNode> points,int edgeThreshold,int i){
+		ArrayList<ColoredNode> res = new ArrayList<>();
+		int a=0;
+		for(ColoredNode cn : points) {
+			if(cn.color == Color.GREY) {
+				
+				for(ColoredNode cnn : points) {
+					if(cn.equals(cnn)) {
+						continue;
+					}
+					if(cnn.p.distance(cn.p)<edgeThreshold && cnn.color==Color.BLACK) {
+						boolean add = true;
+						for(ColoredNode r : res) {
+							if(r.idCompenent == cnn.idCompenent) {
+								add = false;
+								break;
+							}
+						}
+						if(add) {
+							int nid = -1;
+							res.add(cnn);
+							a++;
+							if(a==i) {
+								for(ColoredNode r : res) {
+									if(r.idCompenent != -1) {
+										nid = r.idCompenent;
+										break;
+									}
+								}
+								if(nid == -1) {
+									nid = ColoredNode.id;
+									ColoredNode.id++;
+								}
+								cn.idCompenent = nid;
+								cn.color = Color.BLUE;
+								for(ColoredNode r : res) {
+									r.idCompenent = nid;
+								}
+								return cn;
+							}
+						}
+					}
+				}
+			}
+		}
+		return null;
+		
+		
 	}
 	
 	public void color(ArrayList<ColoredNode> points, ArrayList<ColoredNode> dominated, Color c) {
