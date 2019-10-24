@@ -9,7 +9,7 @@ public class ColoredNode {
 	
 	public ColoredNode(Point p) {
 		this.p = p;
-		color = Color.GREY;
+		color = Color.WHITE;
 	}
 	public ColoredNode(Point p,Color c) {
 		this.p = p;

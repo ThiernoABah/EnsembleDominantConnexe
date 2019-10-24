@@ -1,5 +1,5 @@
 package algorithms;
 
 public enum Color {
-	BLACK,BLUE,GREY;
+	BLACK,BLUE,GREY,WHITE,ORANGE;
 }

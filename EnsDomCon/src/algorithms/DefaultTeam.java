@@ -16,147 +16,19 @@ import java.util.Set;
 import arbreCouvrant.Steiner;
 
 public class DefaultTeam {
-  public ArrayList<Point> calculConnectedDominatingSet(ArrayList<Point> points, int edgeThreshold) {
-	  ArrayList<Point> clone = (ArrayList<Point>) points.clone();
+	public ArrayList<Point> calculConnectedDominatingSet(ArrayList<Point> points, int edgeThreshold) {
+		ArrayList<Point> clone = (ArrayList<Point>) points.clone();
 		// pretraitement pour trouver la plus grande composante connexe ou alors l'input
 		// est un graphe connexe
-//		ArrayList<Point> result = MIS2(clone, edgeThreshold);
-	    ArrayList<Point> result = gloutonNaif(clone, edgeThreshold);
+		ArrayList<Point> result = MIS(clone, edgeThreshold);
+		// ArrayList<Point> result = gloutonNaif(clone, edgeThreshold);
 		System.out.println(isMIS(result, points, edgeThreshold));
-		result = calculSteiner(clone, result, edgeThreshold);
-		System.out.println(isMIS(result, points, edgeThreshold));
-		
+		// result = calculSteiner(clone, result, edgeThreshold);
+		// System.out.println(isMIS(result, points, edgeThreshold));
+
 		return result;
 	}
-	
 
-	public ArrayList<Point> calculSteiner(ArrayList<Point> points, ArrayList<Point> sol, int edgeTreshold) {
-		Steiner steiner = new Steiner();
-		ArrayList<Point> res = steiner.calculSteiner(points, edgeTreshold, sol);
-		if (res.size() == 0) {
-			return sol;
-		}
-		return res;
-	}
-
-	public ArrayList<Point> MIS(ArrayList<Point> points, int edgeThreshold) {
-		ArrayList<Point> res = new ArrayList<>();
-		@SuppressWarnings("unchecked")
-		ArrayList<Point> clonePoints = (ArrayList<Point>) points.clone();
-		Collections.shuffle(clonePoints);
-
-		while (!clonePoints.isEmpty()) {
-			Point toAdd = clonePoints.remove(0);
-			ArrayList<Point> voisins = neighbor(toAdd, clonePoints, edgeThreshold);
-				res.add(toAdd);
-			clonePoints.removeAll(voisins);
-		}
-		return res;
-	}
-	
-	public ArrayList<Point> MIS2(ArrayList<Point> points, int edgeThreshold) {
-		ArrayList<Point> res = new ArrayList<>();
-		
-		@SuppressWarnings("unchecked")
-		
-		ArrayList<Point> clonePoints = (ArrayList<Point>) points.clone();
-		Collections.shuffle(clonePoints);
-		
-		Point start = clonePoints.remove(0);
-		res.add(start);
-		
-		while (!clonePoints.isEmpty()) {
-			ArrayList<Point> voisins = neighbor(start, clonePoints, edgeThreshold);
-			
-			if(voisins.size()==0) {
-				for(int i = 0;i<clonePoints.size();i++) {
-					voisins = neighbor(clonePoints.get(i), points, edgeThreshold);
-					boolean canContinue = true;
-					for(Point p : voisins) {
-						if(res.contains(p)) {
-							canContinue = false;
-							break;
-						}
-					}
-					if(canContinue) {
-						start = clonePoints.remove(i);
-						res.add(start);
-						break;
-					}
-				}
-				continue;
-			}
-			Point next = voisins.get(0);
-			int max = 0;
-			for (Point p : voisins) {
-				if(p.equals(start)) {
-					continue;
-				}
-				if (neighbor(p, points, edgeThreshold).size() > max) {
-					max = neighbor(p, points, edgeThreshold).size();
-					next = p;
-				}
-			}
-			clonePoints.removeAll(voisins);
-			voisins = neighbor(next, clonePoints, edgeThreshold);
-			max = 0;
-			for (Point p : voisins) {
-				if (neighbor(p, points, edgeThreshold).size() > max) {
-					max = neighbor(p, points, edgeThreshold).size();
-					start = p;
-				}
-			}
-			res.add(start);
-		}
-		return res;
-	}
-	public boolean isMIS(ArrayList<Point> MIS, ArrayList<Point> points,int edgeThreshold) {
-		if(!isValid(points, MIS, edgeThreshold)) {
-			return false;
-		}
-		ArrayList<Point> voisins = new ArrayList<Point>();
-		Set<Point> deuxVoisins = new HashSet<Point>();
-		for(Point p : MIS) {
-			voisins = neighbor(p, points, edgeThreshold);
-			
-			for(Point v : voisins) {
-				if(MIS.contains(v)) {
-					return false;
-				}
-				deuxVoisins.addAll(neighbor(v, points, edgeThreshold));
-			}
-			
-			boolean ok = false;
-			deuxVoisins.remove(p);	
-			deuxVoisins.removeAll(voisins);
-			System.out.println(deuxVoisins.size());
-			for(Point v : deuxVoisins) {
-				if(MIS.contains(v)) {
-					ok = true;
-					break;
-				}
-			}
-			if(!ok) {
-				return false;
-			}
-			deuxVoisins = new HashSet<Point>();
-		}
-		return true;
-	}
-	public ArrayList<ColoredNode> colorMyPts(ArrayList<Point> MIS, ArrayList<Point> points){
-		 ArrayList<ColoredNode> res = new ArrayList<>(points.size());
-		 
-		 for(Point p : points) {
-			 if(MIS.contains(p)) {
-				 res.add(new ColoredNode(p,Color.BLACK));
-			 }
-			 else {
-				 res.add(new ColoredNode(p));
-			 }
-		 }
-		 return res;	
-	}
-	
 	public ArrayList<Point> gloutonNaif(ArrayList<Point> points, int edgeThreshold) {
 		ArrayList<Point> res = new ArrayList<>();
 		@SuppressWarnings("unchecked")
@@ -176,8 +48,164 @@ public class DefaultTeam {
 		}
 		return res;
 	}
+	
+	public ArrayList<Point> calculSteiner(ArrayList<Point> points, ArrayList<Point> sol, int edgeTreshold) {
+		Steiner steiner = new Steiner();
+		ArrayList<Point> res = steiner.calculSteiner(points, edgeTreshold, sol);
+		if (res.size() == 0) {
+			return sol;
+		}
+		return res;
+	}
+
+	public ArrayList<Point> MIS(ArrayList<Point> points, int edgeThreshold) {
+		ArrayList<ColoredNode> coloredPts = colorMyPts(points);
+		ArrayList<ColoredNode> black = new ArrayList<>();
+		ArrayList<ColoredNode> orange = new ArrayList<>();
+
+		int max = 0;
+
+		ArrayList<ColoredNode> voisin = new ArrayList<>();
+		ColoredNode start = coloredPts.get(0);
+		for (ColoredNode p : coloredPts) {
+			if (whiteNeighbor(p, coloredPts, edgeThreshold).size() > max) {
+				voisin = whiteNeighbor(p, coloredPts, edgeThreshold);
+				max = voisin.size();
+				start = p;
+			}
+		}
+		start.color = Color.BLACK;
+		black.add(start);
+
+		for (ColoredNode cn : voisin) {
+			cn.color = Color.GREY;
+		}
+		for (ColoredNode cn : voisin) {
+			for (ColoredNode o : whiteNeighbor(cn, coloredPts, edgeThreshold)) {
+				o.color = Color.ORANGE;
+				orange.add(o);
+			}
+		}
+
+		while (!orange.isEmpty()) {
+			voisin = new ArrayList<>();
+			ArrayList<ColoredNode> voisin2 = new ArrayList<>();
+			max = 0;
+			for (ColoredNode p : orange) {
+				if (orangeWhiteNeighbor(p, coloredPts, edgeThreshold).size() > max) {
+					voisin = orangeWhiteNeighbor(p, coloredPts, edgeThreshold);
+					voisin2 = neighbor(p, coloredPts, edgeThreshold);
+					max = voisin.size();
+					start = p;
+				}
+			}
+			start.color = Color.BLACK;
+			black.add(start);
+			for (ColoredNode cn : voisin) {
+				if (cn.color == Color.ORANGE) {
+					orange.remove(cn);
+				}
+				if (cn.color == Color.BLACK) {
+					System.out.println("nope dude");
+				}
+				cn.color = Color.GREY;
+			}
+			for (ColoredNode cn : voisin2) {
+				for (ColoredNode o : whiteNeighbor(cn, coloredPts, edgeThreshold)) {
+					o.color = Color.ORANGE;
+					orange.add(o);
+				}
+			}
+			boolean keep = false;
+			for (ColoredNode p : orange) {
+				// que des voisins gris
+				if (orangeWhiteNeighbor(p, coloredPts, edgeThreshold).size() > 0) {
+					keep = true;
+					System.out.println("keep going strong");
+					break;
+				}
+			}
+			if (!keep) {
+				black.addAll(orange);
+				orange.clear();
+			}
+		}
+		return decolorMyPts(black);
+	}
+	
+	public void color(ArrayList<ColoredNode> points, ArrayList<ColoredNode> dominated, Color c) {
+		for (ColoredNode cn : points) {
+			if (dominated.contains(cn)) {
+				cn.color = c;
+			}
+		}
+	}
+	public ArrayList<ColoredNode> colorMyPts(ArrayList<Point> points) {
+		ArrayList<ColoredNode> res = new ArrayList<>(points.size());
+		for (Point p : points) {
+			res.add(new ColoredNode(p));
+		}
+		return res;
+	}
+
+	public ArrayList<Point> decolorMyPts(ArrayList<ColoredNode> points) {
+		ArrayList<Point> res = new ArrayList<>(points.size());
+		for (ColoredNode p : points) {
+			res.add(p.p);
+		}
+		return res;
+	}
+
+	public ArrayList<ColoredNode> colorMyPtsAlgoA(ArrayList<Point> MIS, ArrayList<Point> points) {
+		ArrayList<ColoredNode> res = new ArrayList<>(points.size());
+
+		for (Point p : points) {
+			if (MIS.contains(p)) {
+				res.add(new ColoredNode(p, Color.BLACK));
+			} else {
+				res.add(new ColoredNode(p));
+			}
+		}
+		return res;
+	}
+
+	public boolean isMIS(ArrayList<Point> MIS, ArrayList<Point> points, int edgeThreshold) {
+		if (!isValid(points, MIS, edgeThreshold)) {
+			return false;
+		}
+		ArrayList<Point> voisins = new ArrayList<Point>();
+		Set<Point> deuxVoisins = new HashSet<Point>();
+		for (Point p : MIS) {
+			voisins = neighbor(p, points, edgeThreshold);
+
+			for (Point v : voisins) {
+				if (MIS.contains(v)) {
+					return false;
+				}
+				deuxVoisins.addAll(neighbor(v, points, edgeThreshold));
+			}
+
+			boolean ok = false;
+			deuxVoisins.remove(p);
+			deuxVoisins.removeAll(voisins);
+
+			for (Point v : deuxVoisins) {
+				if (MIS.contains(v)) {
+					ok = true;
+					break;
+				}
+			}
+			if (!ok) {
+				System.out.println("boom");
+				return false;
+			}
+			deuxVoisins = new HashSet<Point>();
+		}
+		return true;
+	}
 
 	public boolean isValid(ArrayList<Point> points, ArrayList<Point> sol, int edgeThreshold) {
+		// is a dominating set
 		if (sol.size() == 0) {
 			return false;
 		}
@@ -221,7 +249,32 @@ public class DefaultTeam {
 				result.add((Point) point.clone());
 		return result;
 	}
-	
+	public ArrayList<ColoredNode> neighbor(ColoredNode p, ArrayList<ColoredNode> vertices, int edgeThreshold) {
+		ArrayList<ColoredNode> result = new ArrayList<ColoredNode>();
+		for (ColoredNode point : vertices)
+			if (point.p.distance(p.p) < edgeThreshold && !point.equals(p))
+				result.add(point);
+		return result;
+	}
+
+	public ArrayList<ColoredNode> whiteNeighbor(ColoredNode p, ArrayList<ColoredNode> vertices, int edgeThreshold) {
+		ArrayList<ColoredNode> result = new ArrayList<ColoredNode>();
+		for (ColoredNode point : vertices)
+			if (point.p.distance(p.p) < edgeThreshold && !point.equals(p) && point.color == Color.WHITE)
+				result.add(point);
+		return result;
+	}
+
+	public ArrayList<ColoredNode> orangeWhiteNeighbor(ColoredNode p, ArrayList<ColoredNode> vertices,
+			int edgeThreshold) {
+		ArrayList<ColoredNode> result = new ArrayList<ColoredNode>();
+		for (ColoredNode point : vertices)
+			if (point.p.distance(p.p) < edgeThreshold && !point.equals(p) && point.color != Color.BLACK
+					&& point.color != Color.GREY)
+				result.add(point);
+		return result;
+	}
+
 	public Point findMax(ArrayList<Point> graphe, int edgeThreshold) {
 		int max = 0;
 		Point res = graphe.get(0);
@@ -233,7 +286,6 @@ public class DefaultTeam {
 		}
 		return res;
 	}
-
 	public Point findMin(ArrayList<Point> graphe, int edgeThreshold) {
 		int min = Integer.MAX_VALUE;
 		Point res = graphe.get(0);
@@ -245,63 +297,63 @@ public class DefaultTeam {
 		}
 		return res;
 	}
-  
-  
-  //FILE PRINTER
-  private void saveToFile(String filename,ArrayList<Point> result){
-    int index=0;
-    try {
-      while(true){
-        BufferedReader input = new BufferedReader(new InputStreamReader(new FileInputStream(filename+Integer.toString(index)+".points")));
-        try {
-          input.close();
-        } catch (IOException e) {
-          System.err.println("I/O exception: unable to close "+filename+Integer.toString(index)+".points");
-        }
-        index++;
-      }
-    } catch (FileNotFoundException e) {
-      printToFile(filename+Integer.toString(index)+".points",result);
-    }
-  }
-  private void printToFile(String filename,ArrayList<Point> points){
-    try {
-      PrintStream output = new PrintStream(new FileOutputStream(filename));
-      int x,y;
-      for (Point p:points) output.println(Integer.toString((int)p.getX())+" "+Integer.toString((int)p.getY()));
-      output.close();
-    } catch (FileNotFoundException e) {
-      System.err.println("I/O exception: unable to create "+filename);
-    }
-  }
 
-  //FILE LOADER
-  private ArrayList<Point> readFromFile(String filename) {
-    String line;
-    String[] coordinates;
-    ArrayList<Point> points=new ArrayList<Point>();
-    try {
-      BufferedReader input = new BufferedReader(
-          new InputStreamReader(new FileInputStream(filename))
-          );
-      try {
-        while ((line=input.readLine())!=null) {
-          coordinates=line.split("\\s+");
-          points.add(new Point(Integer.parseInt(coordinates[0]),
-                Integer.parseInt(coordinates[1])));
-        }
-      } catch (IOException e) {
-        System.err.println("Exception: interrupted I/O.");
-      } finally {
-        try {
-          input.close();
-        } catch (IOException e) {
-          System.err.println("I/O exception: unable to close "+filename);
-        }
-      }
-    } catch (FileNotFoundException e) {
-      System.err.println("Input file not found.");
-    }
-    return points;
-  }
+	// FILE PRINTER
+	private void saveToFile(String filename, ArrayList<Point> result) {
+		int index = 0;
+		try {
+			while (true) {
+				BufferedReader input = new BufferedReader(
+						new InputStreamReader(new FileInputStream(filename + Integer.toString(index) + ".points")));
+				try {
+					input.close();
+				} catch (IOException e) {
+					System.err.println(
+							"I/O exception: unable to close " + filename + Integer.toString(index) + ".points");
+				}
+				index++;
+			}
+		} catch (FileNotFoundException e) {
+			printToFile(filename + Integer.toString(index) + ".points", result);
+		}
+	}
+
+	private void printToFile(String filename, ArrayList<Point> points) {
+		try {
+			PrintStream output = new PrintStream(new FileOutputStream(filename));
+			int x, y;
+			for (Point p : points)
+				output.println(Integer.toString((int) p.getX()) + " " + Integer.toString((int) p.getY()));
+			output.close();
+		} catch (FileNotFoundException e) {
+			System.err.println("I/O exception: unable to create " + filename);
+		}
+	}
+
+	// FILE LOADER
+	private ArrayList<Point> readFromFile(String filename) {
+		String line;
+		String[] coordinates;
+		ArrayList<Point> points = new ArrayList<Point>();
+		try {
+			BufferedReader input = new BufferedReader(new InputStreamReader(new FileInputStream(filename)));
+			try {
+				while ((line = input.readLine()) != null) {
+					coordinates = line.split("\\s+");
+					points.add(new Point(Integer.parseInt(coordinates[0]), Integer.parseInt(coordinates[1])));
+				}
+			} catch (IOException e) {
+				System.err.println("Exception: interrupted I/O.");
+			} finally {
+				try {
+					input.close();
+				} catch (IOException e) {
+					System.err.println("I/O exception: unable to close " + filename);
+				}
+			}
+		} catch (FileNotFoundException e) {
+			System.err.println("Input file not found.");
+		}
+		return points;
+	}
 }
