@@ -23,8 +23,9 @@ public class DefaultTeam {
 		ArrayList<Point> result = MIS(clone, edgeThreshold);
 		// ArrayList<Point> result = gloutonNaif(clone, edgeThreshold);
 		System.out.println(isMIS(result, points, edgeThreshold));
-		// result = calculSteiner(clone, result, edgeThreshold);
-		// System.out.println(isMIS(result, points, edgeThreshold));
+		 result = calculSteiner(clone,result, edgeThreshold);
+//		result = algoA(result, clone, edgeThreshold);
+		System.out.println(isMIS(result, points, edgeThreshold));
 
 		return result;
 	}
@@ -48,7 +49,7 @@ public class DefaultTeam {
 		}
 		return res;
 	}
-	
+
 	public ArrayList<Point> calculSteiner(ArrayList<Point> points, ArrayList<Point> sol, int edgeTreshold) {
 		Steiner steiner = new Steiner();
 		ArrayList<Point> res = steiner.calculSteiner(points, edgeTreshold, sol);
@@ -59,11 +60,12 @@ public class DefaultTeam {
 	}
 
 	public ArrayList<Point> MIS(ArrayList<Point> points, int edgeThreshold) {
+
 		ArrayList<ColoredNode> coloredPts = colorMyPts(points);
 		ArrayList<ColoredNode> black = new ArrayList<>();
-		ArrayList<ColoredNode> orange = new ArrayList<>();
+		ArrayList<ColoredNode> grey = new ArrayList<>();
 		ArrayList<ColoredNode> voisin = new ArrayList<>();
-		
+
 		int max = 0;
 		ColoredNode start = coloredPts.get(0);
 		for (ColoredNode p : coloredPts) {
@@ -73,115 +75,159 @@ public class DefaultTeam {
 				start = p;
 			}
 		}
+
 		start.color = Color.BLACK;
 		black.add(start);
-
 		for (ColoredNode cn : voisin) {
 			cn.color = Color.GREY;
+			grey.add(cn);
 		}
-		for (ColoredNode cn : voisin) {
-			for (ColoredNode o : whiteNeighbor(cn, coloredPts, edgeThreshold)) {
-				o.color = Color.ORANGE;
-				orange.add(o);
+		boolean white = true;
+		while (white) {
+			voisin = new ArrayList<>();
+			for (ColoredNode p : coloredPts) {
+				boolean blackNeig = false;
+				boolean greyNeig = false;
+				if (p.color == Color.WHITE) {
+					for (ColoredNode vp : neighbor(p, coloredPts, edgeThreshold)) {
+						if (vp.color == Color.BLACK) {
+							blackNeig = true;
+							break;
+						}
+					}
+					for (ColoredNode vp : neighbor(p, coloredPts, edgeThreshold)) {
+						if (vp.color == Color.GREY) {
+							greyNeig = true;
+							break;
+						}
+					}
+					if (greyNeig && !blackNeig) {
+						start = p;
+						start.color = Color.BLACK;
+						black.add(start);
+						for (ColoredNode cn : whiteNeighbor(p, coloredPts, edgeThreshold)) {
+							cn.color = Color.GREY;
+							grey.add(cn);
+						}
+					}
+				}
+			}
+			white = false;
+			for (ColoredNode p : coloredPts) {
+				if (p.color == Color.WHITE) {
+					white = true;
+				}
 			}
 		}
 
-		while (!orange.isEmpty()) {
-			voisin = new ArrayList<>();
-			ArrayList<ColoredNode> voisin2 = new ArrayList<>();
-			max = 0;
-			for (ColoredNode p : orange) {
-				if (orangeWhiteNeighbor(p, coloredPts, edgeThreshold).size() > max) {
-					voisin = orangeWhiteNeighbor(p, coloredPts, edgeThreshold);
-					voisin2 = neighbor(p, coloredPts, edgeThreshold);
-					max = voisin.size();
-					start = p;
-				}
-			}
-			start.color = Color.BLACK;
-			black.add(start);
-			for (ColoredNode cn : voisin) {
-				if (cn.color == Color.ORANGE) {
-					orange.remove(cn);
-				}
-				if (cn.color == Color.BLACK) {
-					System.out.println("nope dude");
-				}
-				cn.color = Color.GREY;
-			}
-			for (ColoredNode cn : voisin2) {
-				for (ColoredNode o : whiteNeighbor(cn, coloredPts, edgeThreshold)) {
-					o.color = Color.ORANGE;
-					orange.add(o);
-				}
-			}
-			boolean keep = false;
-			for (ColoredNode p : orange) {
-				// que des voisins gris
-				if (orangeWhiteNeighbor(p, coloredPts, edgeThreshold).size() > 0) {
-					keep = true;
-					System.out.println("keep going strong");
-					break;
-				}
-			}
-			if (!keep) {
-				black.addAll(orange);
-				orange.clear();
-			}
-		}
 		return decolorMyPts(black);
 	}
-	
-	public ArrayList<Point> algoA(ArrayList<Point> MIS, ArrayList<Point> points, int edgeThreshold){
-		ArrayList<ColoredNode> coloredPts = colorMyPtsAlgoA(MIS,points);
-		ColoredNode pt = coloredPts.get(0);
-		for( int i= 5;i>1;i--) {
-			pt = greyNodeWithIBlack(coloredPts, edgeThreshold, i);
-			if(pt == null) {
-				continue;
-			}
-			
-		}
-		return points;
-		
-	}
-	
-	public ColoredNode greyNodeWithIBlack(ArrayList<ColoredNode> points,int edgeThreshold,int i){
-		ArrayList<ColoredNode> res = new ArrayList<>();
-		int a=0;
-		for(ColoredNode cn : points) {
-			if(cn.color == Color.GREY) {
-				
-				for(ColoredNode cnn : points) {
-					if(cn.equals(cnn)) {
+
+	public ArrayList<Point> algoA(ArrayList<Point> MIS, ArrayList<Point> points, int edgeThreshold) {
+		ArrayList<ColoredNode> coloredPts = colorMyPtsAlgoA(MIS, points);
+		ArrayList<ColoredNode> grey = new ArrayList<>();
+		ArrayList<ColoredNode> blackN = new ArrayList<>();
+		ArrayList<ColoredNode> voisin = new ArrayList<>();
+		ArrayList<Point> res = new ArrayList<>();
+		for (ColoredNode cp : coloredPts) {
+			if (cp.color == Color.BLACK) {
+				for (ColoredNode v : neighbor(cp, coloredPts, edgeThreshold)) {
+					if (v.color == Color.GREY) {
 						continue;
 					}
-					if(cnn.p.distance(cn.p)<edgeThreshold && cnn.color==Color.BLACK) {
+					v.color = Color.GREY;
+					grey.add(v);
+				}
+			}
+		}
+		
+		boolean add = true;
+		ColoredNode pt = coloredPts.get(0);
+		for (int i = 5; i > 1; i--) {
+			for (int g = 0 ;g<grey.size();g++) {
+				voisin = neighbor(grey.get(g), coloredPts, edgeThreshold);
+				if (voisin.size() >= i) {
+					blackN = new ArrayList<>();
+					
+					for (ColoredNode v : voisin) {
+						if (v.color == Color.BLACK) {
+							add = true;
+							for (ColoredNode r : blackN) {
+								if (r.idCompenent == v.idCompenent && r.idCompenent != -1) {
+									
+									add = false;
+									break;
+								}
+							}
+							if (add) {
+								blackN.add(v);
+							}
+						}
+					}
+					if (blackN.size() >= i) {
+						int id = -1;
+						for (int j = 0; j < i; j++) {
+							if (blackN.get(j).idCompenent > id) {
+								id = blackN.get(j).idCompenent;
+							}
+						}
+						if (id == -1) {
+							id = ColoredNode.id;
+							ColoredNode.id++;
+						}
+						grey.get(g).idCompenent = id;
+						grey.get(g).color = Color.BLUE;
+						for (int j = 0; j < i; j++) {
+							blackN.get(j).idCompenent = id;
+						}
+						res.add(grey.get(g).p);
+						grey.remove(g);
+						g--;
+					}
+
+				}
+			}
+		}
+		res.addAll(MIS);
+		return res;
+	}
+
+	public ColoredNode greyNodeWithIBlack(ArrayList<ColoredNode> points, int edgeThreshold, int i) {
+		ArrayList<ColoredNode> res = new ArrayList<>();
+		int a = 0;
+		for (ColoredNode cn : points) {
+			if (cn.color == Color.GREY) {
+				a = 0;
+				res = new ArrayList<>();
+
+				for (ColoredNode cnn : neighbor(cn, points, edgeThreshold)) {
+					if (cnn.color == Color.BLACK) {
 						boolean add = true;
-						for(ColoredNode r : res) {
-							if(r.idCompenent == cnn.idCompenent) {
+						for (ColoredNode r : res) {
+							if (r.idCompenent == cnn.idCompenent && r.idCompenent != -1) {
 								add = false;
 								break;
 							}
 						}
-						if(add) {
+						if (add) {
 							int nid = -1;
 							res.add(cnn);
 							a++;
-							if(a==i) {
-								for(ColoredNode r : res) {
-									if(r.idCompenent != -1) {
+
+							if (a == i) {
+								for (ColoredNode r : res) {
+									if (r.idCompenent != -1) {
 										nid = r.idCompenent;
 										break;
 									}
 								}
-								if(nid == -1) {
+								if (nid == -1) {
 									nid = ColoredNode.id;
 									ColoredNode.id++;
 								}
 								cn.idCompenent = nid;
 								cn.color = Color.BLUE;
-								for(ColoredNode r : res) {
+								for (ColoredNode r : res) {
 									r.idCompenent = nid;
 								}
 								return cn;
@@ -192,10 +238,9 @@ public class DefaultTeam {
 			}
 		}
 		return null;
-		
-		
+
 	}
-	
+
 	public void color(ArrayList<ColoredNode> points, ArrayList<ColoredNode> dominated, Color c) {
 		for (ColoredNode cn : points) {
 			if (dominated.contains(cn)) {
@@ -203,6 +248,7 @@ public class DefaultTeam {
 			}
 		}
 	}
+
 	public ArrayList<ColoredNode> colorMyPts(ArrayList<Point> points) {
 		ArrayList<ColoredNode> res = new ArrayList<>(points.size());
 		for (Point p : points) {
@@ -312,6 +358,7 @@ public class DefaultTeam {
 				result.add((Point) point.clone());
 		return result;
 	}
+
 	public ArrayList<ColoredNode> neighbor(ColoredNode p, ArrayList<ColoredNode> vertices, int edgeThreshold) {
 		ArrayList<ColoredNode> result = new ArrayList<ColoredNode>();
 		for (ColoredNode point : vertices)
@@ -349,6 +396,7 @@ public class DefaultTeam {
 		}
 		return res;
 	}
+
 	public Point findMin(ArrayList<Point> graphe, int edgeThreshold) {
 		int min = Integer.MAX_VALUE;
 		Point res = graphe.get(0);
