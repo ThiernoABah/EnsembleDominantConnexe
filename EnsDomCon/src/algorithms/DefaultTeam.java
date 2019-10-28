@@ -9,7 +9,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -17,15 +16,16 @@ import arbreCouvrant.Steiner;
 
 public class DefaultTeam {
 	public ArrayList<Point> calculConnectedDominatingSet(ArrayList<Point> points, int edgeThreshold) {
+		@SuppressWarnings("unchecked")
 		ArrayList<Point> clone = (ArrayList<Point>) points.clone();
-		// pretraitement pour trouver la plus grande composante connexe ou alors l'input
-		// est un graphe connexe
+
 		ArrayList<Point> result = MIS(clone, edgeThreshold);
 		// ArrayList<Point> result = gloutonNaif(clone, edgeThreshold);
-		System.out.println(isMIS(result, points, edgeThreshold));
-		 result = calculSteiner(clone,result, edgeThreshold);
-//		result = algoA(result, clone, edgeThreshold);
-		System.out.println(isMIS(result, points, edgeThreshold));
+		System.out.println("MIS stable : " + isMIS(result, points, edgeThreshold));
+
+		// result = calculSteiner(clone,result, edgeThreshold);
+		result = algoA(result, clone, edgeThreshold);
+		System.out.println("Tree -> connexe : " + isTree(result, points, edgeThreshold));
 
 		return result;
 	}
@@ -129,60 +129,81 @@ public class DefaultTeam {
 		ArrayList<ColoredNode> blackN = new ArrayList<>();
 		ArrayList<ColoredNode> voisin = new ArrayList<>();
 		ArrayList<Point> res = new ArrayList<>();
+
 		for (ColoredNode cp : coloredPts) {
-			if (cp.color == Color.BLACK) {
-				for (ColoredNode v : neighbor(cp, coloredPts, edgeThreshold)) {
-					if (v.color == Color.GREY) {
-						continue;
-					}
-					v.color = Color.GREY;
-					grey.add(v);
-				}
+			if (cp.color == Color.GREY) {
+				grey.add(cp);
 			}
 		}
-		
+
 		boolean add = true;
-		ColoredNode pt = coloredPts.get(0);
 		for (int i = 5; i > 1; i--) {
-			for (int g = 0 ;g<grey.size();g++) {
+			for (int g = 0; g < grey.size(); g++) {
 				voisin = neighbor(grey.get(g), coloredPts, edgeThreshold);
 				if (voisin.size() >= i) {
 					blackN = new ArrayList<>();
-					
 					for (ColoredNode v : voisin) {
 						if (v.color == Color.BLACK) {
-							add = true;
-							for (ColoredNode r : blackN) {
-								if (r.idCompenent == v.idCompenent && r.idCompenent != -1) {
-									
-									add = false;
-									break;
-								}
-							}
-							if (add) {
+							if (v.composant == 0) {
 								blackN.add(v);
+							} else {
+								add = true;
+								for (ColoredNode r : blackN) {
+									if (r.composant == v.composant && !r.equals(v)) {
+										add = false;
+										break;
+									}
+								}
+								if (add) {
+									blackN.add(v);
+								}
 							}
 						}
 					}
 					if (blackN.size() >= i) {
-						int id = -1;
+						boolean noComp = true;
 						for (int j = 0; j < i; j++) {
-							if (blackN.get(j).idCompenent > id) {
-								id = blackN.get(j).idCompenent;
+							if (blackN.get(j).composant != 0) {
+								noComp = false;
 							}
 						}
-						if (id == -1) {
-							id = ColoredNode.id;
+						if (noComp) {
+							grey.get(g).color = Color.BLUE;
 							ColoredNode.id++;
+							grey.get(g).composant = ColoredNode.id;
+							for (int j = 0; j < i; j++) {
+								blackN.get(j).composant = grey.get(g).composant;
+							}
+							res.add(grey.get(g).p);
+							grey.remove(g);
+							g--;
+						} else {
+							grey.get(g).color = Color.BLUE;
+							
+							ArrayList<Integer> composant = new ArrayList<>();
+							for (int j = 0; j < i; j++) {
+								if (blackN.get(j).composant != 0) {
+									composant.add(blackN.get(j).composant);
+								}
+							}
+							
+							grey.get(g).composant = composant.get(0);
+							for (ColoredNode c : coloredPts) {
+								if (composant.contains(c.composant)) {
+									c.composant = composant.get(0);
+								}
+
+							}
+							for (int z = 0; z < blackN.size(); z++) {
+								blackN.get(z).composant = composant.get(0);
+							}
+
+							res.add(grey.get(g).p);
+							grey.remove(g);
+							g--;
+
 						}
-						grey.get(g).idCompenent = id;
-						grey.get(g).color = Color.BLUE;
-						for (int j = 0; j < i; j++) {
-							blackN.get(j).idCompenent = id;
-						}
-						res.add(grey.get(g).p);
-						grey.remove(g);
-						g--;
+
 					}
 
 				}
@@ -190,54 +211,6 @@ public class DefaultTeam {
 		}
 		res.addAll(MIS);
 		return res;
-	}
-
-	public ColoredNode greyNodeWithIBlack(ArrayList<ColoredNode> points, int edgeThreshold, int i) {
-		ArrayList<ColoredNode> res = new ArrayList<>();
-		int a = 0;
-		for (ColoredNode cn : points) {
-			if (cn.color == Color.GREY) {
-				a = 0;
-				res = new ArrayList<>();
-
-				for (ColoredNode cnn : neighbor(cn, points, edgeThreshold)) {
-					if (cnn.color == Color.BLACK) {
-						boolean add = true;
-						for (ColoredNode r : res) {
-							if (r.idCompenent == cnn.idCompenent && r.idCompenent != -1) {
-								add = false;
-								break;
-							}
-						}
-						if (add) {
-							int nid = -1;
-							res.add(cnn);
-							a++;
-
-							if (a == i) {
-								for (ColoredNode r : res) {
-									if (r.idCompenent != -1) {
-										nid = r.idCompenent;
-										break;
-									}
-								}
-								if (nid == -1) {
-									nid = ColoredNode.id;
-									ColoredNode.id++;
-								}
-								cn.idCompenent = nid;
-								cn.color = Color.BLUE;
-								for (ColoredNode r : res) {
-									r.idCompenent = nid;
-								}
-								return cn;
-							}
-						}
-					}
-				}
-			}
-		}
-		return null;
 
 	}
 
@@ -272,7 +245,7 @@ public class DefaultTeam {
 			if (MIS.contains(p)) {
 				res.add(new ColoredNode(p, Color.BLACK));
 			} else {
-				res.add(new ColoredNode(p));
+				res.add(new ColoredNode(p, Color.GREY));
 			}
 		}
 		return res;

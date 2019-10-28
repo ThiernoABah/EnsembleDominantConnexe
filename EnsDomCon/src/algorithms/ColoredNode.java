@@ -6,7 +6,7 @@ public class ColoredNode {
 	public static int id = 0;
 	public Point p;
 	public Color color;
-	public int idCompenent = -1;
+	public int composant = 0;
 	
 	public ColoredNode(Point p) {
 		this.p = p;
