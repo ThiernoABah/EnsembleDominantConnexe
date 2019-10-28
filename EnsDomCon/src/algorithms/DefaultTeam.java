@@ -22,10 +22,11 @@ public class DefaultTeam {
 		ArrayList<Point> result = MIS(clone, edgeThreshold);
 		// ArrayList<Point> result = gloutonNaif(clone, edgeThreshold);
 		System.out.println("MIS stable : " + isMIS(result, points, edgeThreshold));
-
+		System.out.println("Tree -> connexe : " + isConnected(result, edgeThreshold));
 		// result = calculSteiner(clone,result, edgeThreshold);
 		result = algoA(result, clone, edgeThreshold);
-		System.out.println("Tree -> connexe : " + isTree(result, points, edgeThreshold));
+		System.out.println("is a MIS : " + isValid(points, result, edgeThreshold));
+		System.out.println("Tree -> connexe : " + isConnected(result, edgeThreshold));
 
 		return result;
 	}
@@ -41,6 +42,7 @@ public class DefaultTeam {
 			}
 			Point p = findMax(clonePoints, edgeThreshold);
 			for (Point n : neighbor(p, points, edgeThreshold)) {
+				
 				if (!res.contains(n))
 					clonePoints.remove(n);
 			}
@@ -301,26 +303,44 @@ public class DefaultTeam {
 		return result.size() == 0;
 	}
 
-	public boolean isTree(ArrayList<Point> points, ArrayList<Point> sol, int edgeThreshold) {
-		// no cycle and connected
-		ArrayList<Point> seen = new ArrayList<>();
-		ArrayList<Point> stack = new ArrayList<>();
-		@SuppressWarnings("unchecked")
-		ArrayList<Point> toSee = (ArrayList<Point>) points.clone();
-		Point current;
-		stack.add(toSee.get(0));
-		seen.add(toSee.get(0));
-		toSee.remove(0);
-		while (!stack.isEmpty()) {
-			current = stack.remove(0);
-			for (Point p : neighbor(current, toSee, edgeThreshold)) {
-				if (seen.contains(p)) {
-					return false; // cycle
+	public boolean isConnected(ArrayList<Point> points, int edgeThreshold) {
+		int[][] paths = new int[points.size()][points.size()];
+		double[][] dist = new double[points.size()][points.size()];
+
+		for (int i = 0; i < points.size(); i++) {
+			for (int j = 0; j < points.size(); j++) {
+				if ((points.get(i).distance(points.get(j))) < edgeThreshold) {
+					paths[i][j] = j;
+					dist[i][j] = (points.get(i).distance(points.get(j)));
+				} else {
+					paths[i][j] = -1;
+					dist[i][j] = Double.POSITIVE_INFINITY;
 				}
-				stack.add(p);
 			}
-			toSee.removeAll(stack);
 		}
+		double d = 0.0;
+		for (int k = 0; k < points.size(); k++) {
+			for (int i = 0; i < paths.length; i++) {
+				for (int j = 0; j < paths.length; j++) {
+					if ((paths[i][k] != -1) && (paths[k][j] != -1)) {
+						d = dist[i][k] + dist[k][j];
+						if (d < dist[i][j]) {
+							dist[i][j] = d;
+							paths[i][j] = paths[i][k];
+						}
+					}
+				}
+			}
+		}
+		
+		for (int i = 0; i < paths.length; i++) {
+			for (int j = 0; j < paths.length; j++) {
+				if (paths[i][j] == -1) {
+					return false;
+				}
+			}
+		}
+		
 		return true;
 	}
 
