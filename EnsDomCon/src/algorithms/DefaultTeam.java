@@ -20,31 +20,31 @@ public class DefaultTeam {
 	public ArrayList<Point> calculConnectedDominatingSet(ArrayList<Point> points, int edgeThreshold) {
 		@SuppressWarnings("unchecked")
 		ArrayList<Point> clone = (ArrayList<Point>) points.clone();
-		
-		System.out.println("Graph with "+clone.size()+" nodes");
-		
+
+		System.out.println("Graph with " + clone.size() + " nodes");
+
 		Instant s = Instant.now();
 		ArrayList<Point> result = MIS(clone, edgeThreshold);
 		Instant f = Instant.now();
-		
-//		s = Instant.now();
-//		ArrayList<Point> result = gloutonNaif(clone, edgeThreshold);
-//		f = Instant.now();
 
-		System.out.println(Duration.between(s,f).toMillis()+" ms to construct the MIS");
+		// s = Instant.now();
+		// ArrayList<Point> result = gloutonNaif(clone, edgeThreshold);
+		// f = Instant.now();
+
+		System.out.println(Duration.between(s, f).toMillis() + " ms to construct the MIS");
 		System.out.println("MIS is stable ? -> " + isMIS(result, points, edgeThreshold));
 		System.out.println("MIS size : " + result.size());
 
 		s = Instant.now();
 		result = algoA(result, clone, edgeThreshold);
 		f = Instant.now();
-		System.out.println(Duration.between(s,f).toMillis()+" ms to compute algoA");
-		
-//		s = Instant.now();
-//		result = calculSteiner(clone, result, edgeThreshold);
-//		f = Instant.now();
-//		System.out.println(Duration.between(s,f)+" ms to compute calculSteiner");
-		
+		System.out.println(Duration.between(s, f).toMillis() + " ms to compute algoA");
+
+		// s = Instant.now();
+		// result = calculSteiner(clone, result, edgeThreshold);
+		// f = Instant.now();
+		// System.out.println(Duration.between(s,f)+" ms to compute calculSteiner");
+
 		System.out.println("is a MIS ? -> " + isValid(points, result, edgeThreshold));
 		System.out.println("is connected ? -> " + isConnected(result, edgeThreshold));
 		System.out.println("Connected MIS size : " + result.size());
@@ -208,7 +208,7 @@ public class DefaultTeam {
 					for (int j = 0; j < i; j++) {
 						blackN.get(j).composant = grey.get(g).composant;
 					}
-					
+
 				} else {
 					grey.get(g).color = Color.BLUE;
 					ArrayList<Integer> composant = new ArrayList<>();
@@ -272,7 +272,7 @@ public class DefaultTeam {
 		}
 		ArrayList<Point> voisins = new ArrayList<Point>();
 		Set<Point> deuxVoisins = new HashSet<Point>();
-		
+
 		for (int i = 0; i < MIS.size(); i++) {
 			for (int j = 0; j < MIS.size(); j++) {
 				if (i == j) {
@@ -423,6 +423,7 @@ public class DefaultTeam {
 	}
 
 	// FILE PRINTER
+	@SuppressWarnings("unused")
 	private void saveToFile(String filename, ArrayList<Point> result) {
 		int index = 0;
 		try {
@@ -442,19 +443,8 @@ public class DefaultTeam {
 		}
 	}
 
-	private void printToFile(String filename, ArrayList<Point> points) {
-		try {
-			PrintStream output = new PrintStream(new FileOutputStream(filename));
-			int x, y;
-			for (Point p : points)
-				output.println(Integer.toString((int) p.getX()) + " " + Integer.toString((int) p.getY()));
-			output.close();
-		} catch (FileNotFoundException e) {
-			System.err.println("I/O exception: unable to create " + filename);
-		}
-	}
-
 	// FILE LOADER
+	@SuppressWarnings("unused")
 	private ArrayList<Point> readFromFile(String filename) {
 		String line;
 		String[] coordinates;
@@ -479,5 +469,16 @@ public class DefaultTeam {
 			System.err.println("Input file not found.");
 		}
 		return points;
+	}
+	
+	private void printToFile(String filename, ArrayList<Point> points) {
+		try {
+			PrintStream output = new PrintStream(new FileOutputStream(filename));
+			for (Point p : points)
+				output.println(Integer.toString((int) p.getX()) + " " + Integer.toString((int) p.getY()));
+			output.close();
+		} catch (FileNotFoundException e) {
+			System.err.println("I/O exception: unable to create " + filename);
+		}
 	}
 }
