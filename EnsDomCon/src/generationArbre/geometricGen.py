@@ -1,14 +1,15 @@
-
 import networkx as nx
 import random
-n = 1000
-p = {i: (random.randint(80, 1200), random.randint(80, 900)) for i in range(n)}
-G = nx.random_geometric_graph(n, 55.0,pos = p)
+n = 5000
+G = nx.random_geometric_graph(n, 54.0)
 
-f= open("input.points","w")
+f= open("../../inputPy.points","w")
 pos=nx.get_node_attributes(G,'pos')
 for v in pos.values():
-  s = str(v[0])+" "+str(v[1])+"\n"
+  x = int(80+v[0]*1080)
+  y = int(v[1]*1000)
+  if(y>=900):
+    y= y - random.randint(100,800)
+  s = str(x )+" "+str(y)+"\n"
   f.write(s)
 f.close()
-#nx.draw(G)

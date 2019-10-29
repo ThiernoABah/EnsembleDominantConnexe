@@ -78,8 +78,7 @@ public class Steiner {
 			resres = new ArrayList<>();
 		}
 		////////////////////////////////////////////////////////////////////////////
-		//////////////////// 2 eme Kruskal mais sur la liste de points qui forme les arete de l'arbre final -> Solution "un peu" ameliorer
-				
+		//////////////////// 2 eme Kruskal mais sur la liste de points qui forme les arete de l'arbre final -> Solution "un peu" ameliorer	
 		return Kruskal(pts);
 		
 	}
