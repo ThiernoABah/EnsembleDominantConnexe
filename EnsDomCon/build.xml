@@ -36,9 +36,9 @@
     <java classname="supportGUI.DiskGraphsViewer"
           classpath="${build}/:jars/*" fork="true">
     	<arg value="-nbPoints"/>
-    	<arg value="3000"/>
+    	<arg value="5000"/>
     	<arg value="-edgeThreshold"/>
-    	<arg value="55"/>
+    	<arg value="45"/>
 <!--
     	<arg value="-proxyPPTI"/>
 -->

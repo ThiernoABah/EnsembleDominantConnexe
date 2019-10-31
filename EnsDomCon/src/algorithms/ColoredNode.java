@@ -2,6 +2,12 @@ package algorithms;
 
 import java.awt.Point;
 
+
+/**
+ * Classe qui represente un noeud colorer
+ * @author 3408625
+ *
+ */
 public class ColoredNode {
 	public static int id = 0;
 	public Point p;

@@ -21,15 +21,17 @@ public class DefaultTeam {
 		@SuppressWarnings("unchecked")
 		ArrayList<Point> clone = (ArrayList<Point>) points.clone();
 
+		
+		
 		System.out.println("Graph with " + clone.size() + " nodes");
+		
+//		Instant s = Instant.now();
+//		ArrayList<Point> result = MIS(clone, edgeThreshold);
+//		Instant f = Instant.now();
 
 		Instant s = Instant.now();
-		ArrayList<Point> result = MIS(clone, edgeThreshold);
+		ArrayList<Point> result = gloutonNaif(clone, edgeThreshold);
 		Instant f = Instant.now();
-
-		// s = Instant.now();
-		// ArrayList<Point> result = gloutonNaif(clone, edgeThreshold);
-		// f = Instant.now();
 
 		System.out.println(Duration.between(s, f).toMillis() + " ms to construct the MIS");
 		System.out.println("MIS is stable ? -> " + isMIS(result, points, edgeThreshold));
@@ -43,7 +45,7 @@ public class DefaultTeam {
 		// s = Instant.now();
 		// result = calculSteiner(clone, result, edgeThreshold);
 		// f = Instant.now();
-		// System.out.println(Duration.between(s,f)+" ms to compute calculSteiner");
+		// System.out.println(Duration.between(s,f)+" ms to compute Kruskal");
 
 		System.out.println("is a MIS ? -> " + isValid(points, result, edgeThreshold));
 		System.out.println("is connected ? -> " + isConnected(result, edgeThreshold));
@@ -86,7 +88,6 @@ public class DefaultTeam {
 
 		ArrayList<ColoredNode> coloredPts = colorMyPts(points);
 		ArrayList<ColoredNode> black = new ArrayList<>();
-		ArrayList<ColoredNode> grey = new ArrayList<>();
 
 		ArrayList<ColoredNode> voisin = new ArrayList<>();
 		ArrayList<ColoredNode> tmpV = new ArrayList<>();
@@ -100,40 +101,30 @@ public class DefaultTeam {
 				start = p;
 			}
 		}
-
+		
 		start.color = Color.BLACK;
 		black.add(start);
 		for (ColoredNode cn : voisin) {
 			cn.color = Color.GREY;
-			grey.add(cn);
 		}
-
 		boolean white = true;
 		while (white) {
 			voisin = new ArrayList<>();
 			for (ColoredNode p : coloredPts) {
-				boolean blackNeig = false;
 				boolean greyNeig = false;
 				if (p.color == Color.WHITE) {
-					for (ColoredNode vp : neighbor(p, coloredPts, edgeThreshold)) {
-						if (vp.color == Color.BLACK) {
-							blackNeig = true;
-							break;
-						}
-					}
 					for (ColoredNode vp : neighbor(p, coloredPts, edgeThreshold)) {
 						if (vp.color == Color.GREY) {
 							greyNeig = true;
 							break;
 						}
 					}
-					if (greyNeig && !blackNeig) {
+					if (greyNeig) {
 						start = p;
 						start.color = Color.BLACK;
 						black.add(start);
 						for (ColoredNode cn : whiteNeighbor(p, coloredPts, edgeThreshold)) {
 							cn.color = Color.GREY;
-							grey.add(cn);
 						}
 					}
 				}
@@ -170,7 +161,6 @@ public class DefaultTeam {
 				if (voisin.size() < i) {
 					continue;
 				}
-
 				blackN = new ArrayList<>();
 				for (ColoredNode v : voisin) {
 					if (v.color == Color.BLACK) {
