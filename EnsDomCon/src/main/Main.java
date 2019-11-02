@@ -51,9 +51,9 @@ public class Main {
 			f = Instant.now();
 			System.out.println(Duration.between(s, f).toMillis() + " ms to compute algoA");
 
-			System.out.println("is a MIS ? -> " + main.isValid(points, result, edgeThreshold));
+			System.out.println("is a dominating set ? -> " + main.isValid(points, result, edgeThreshold));
 			System.out.println("is connected ? -> " + main.isConnected(result, edgeThreshold));
-			System.out.println("Connected MIS size : " + result.size());
+			System.out.println("CDS size : " + result.size());
 		}
 		else {
 			if(args[0].equals("Naif")) {
@@ -65,7 +65,7 @@ public class Main {
 				ArrayList<Point> result = main.gloutonNaif(points, edgeThreshold);
 				Instant f = Instant.now();
 
-				System.out.println(Duration.between(s, f).toMillis() + " ms to construct the MIS");
+				System.out.println(Duration.between(s, f).toMillis() + " ms to construct the Dominating set");
 				System.out.println("MIS is stable ? -> " + main.isMIS(result, points, edgeThreshold));
 				System.out.println("MIS size : " + result.size());
 
@@ -74,9 +74,9 @@ public class Main {
 				f = Instant.now();
 				System.out.println(Duration.between(s, f).toMillis() + " ms to compute algoA");
 
-				System.out.println("is a MIS ? -> " + main.isValid(points, result, edgeThreshold));
+				System.out.println("is a dominating set ? -> " + main.isValid(points, result, edgeThreshold));
 				System.out.println("is connected ? -> " + main.isConnected(result, edgeThreshold));
-				System.out.println("Connected MIS size : " + result.size());
+				System.out.println("CDS size : " + result.size());
 			}
 			else {
 				System.out.println("hein");

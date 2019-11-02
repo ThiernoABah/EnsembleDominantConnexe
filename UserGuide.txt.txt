@@ -1,0 +1,11 @@
+Pour lancer le jar :
+
+java -jar MinCDS.jar "méthode" "seuil" "fichier"
+
+La méthode est soit "Li" soit "Naif"; "Li" lance la construction de l'ensemble dominant stable et "Naif" lance la construction de l'ensemble dominant.
+Les deux méthodes applique les noeuds de Steiner sur l'ensemble dominant trouver pour le rendre connexe.
+
+exemple :
+
+java -jar MinCDS.jar "Li" "55" "tests/input4000"
+java -jar MinCDS.jar "Naif" "55" "tests/input1000"

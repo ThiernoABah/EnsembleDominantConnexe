@@ -1,6 +1,6 @@
 import networkx as nx
 import random
-n = 5000
+n = 1000
 G = nx.random_geometric_graph(n, 54.0)
 
 f= open("../../inputPy.points","w")
