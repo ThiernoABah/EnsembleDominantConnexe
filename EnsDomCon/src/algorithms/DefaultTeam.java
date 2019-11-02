@@ -54,6 +54,7 @@ public class DefaultTeam {
 		return result;
 	}
 
+	// Methode qui calcul un ensemble dominant de maniere naive
 	public ArrayList<Point> gloutonNaif(ArrayList<Point> points, int edgeThreshold) {
 		ArrayList<Point> res = new ArrayList<>();
 		@SuppressWarnings("unchecked")
@@ -75,15 +76,8 @@ public class DefaultTeam {
 		return res;
 	}
 
-	public ArrayList<Point> calculSteiner(ArrayList<Point> points, ArrayList<Point> sol, int edgeTreshold) {
-		Steiner steiner = new Steiner();
-		ArrayList<Point> res = steiner.calculSteiner(points, edgeTreshold, sol);
-		if (res.size() == 0) {
-			return sol;
-		}
-		return res;
-	}
-
+	
+	// Trouve un MIS
 	public ArrayList<Point> MIS(ArrayList<Point> points, int edgeThreshold) {
 
 		ArrayList<ColoredNode> coloredPts = colorMyPts(points);
@@ -141,6 +135,7 @@ public class DefaultTeam {
 		return decolorMyPts(black);
 	}
 
+	// Algortihme qui ajoute les noeuds de Steiner et construit un CDS
 	public ArrayList<Point> algoA(ArrayList<Point> MIS, ArrayList<Point> points, int edgeThreshold) {
 		ArrayList<ColoredNode> coloredPts = colorMyPtsAlgoA(MIS, points);
 		ArrayList<ColoredNode> grey = new ArrayList<>();
@@ -297,8 +292,9 @@ public class DefaultTeam {
 		return true;
 	}
 
+	// Verifie si sol est un ensemble dominant
 	public boolean isValid(ArrayList<Point> points, ArrayList<Point> sol, int edgeThreshold) {
-		// is a dominating set
+		
 		if (sol.size() == 0) {
 			return false;
 		}
@@ -314,6 +310,7 @@ public class DefaultTeam {
 		return result.size() == 0;
 	}
 
+	// Verifie si point est connexe
 	public boolean isConnected(ArrayList<Point> points, int edgeThreshold) {
 		int[][] paths = new int[points.size()][points.size()];
 		double[][] dist = new double[points.size()][points.size()];
@@ -354,6 +351,7 @@ public class DefaultTeam {
 		return true;
 	}
 
+	// Renvoie les voisins de p dans vertices
 	public ArrayList<Point> neighbor(Point p, ArrayList<Point> vertices, int edgeThreshold) {
 		ArrayList<Point> result = new ArrayList<Point>();
 		for (Point point : vertices)
@@ -362,6 +360,7 @@ public class DefaultTeam {
 		return result;
 	}
 
+	// Renvoie les voisins de p dans vertices
 	public ArrayList<ColoredNode> neighbor(ColoredNode p, ArrayList<ColoredNode> vertices, int edgeThreshold) {
 		ArrayList<ColoredNode> result = new ArrayList<ColoredNode>();
 		for (ColoredNode point : vertices)
@@ -370,6 +369,7 @@ public class DefaultTeam {
 		return result;
 	}
 
+	// Renvoie les voisins blanc de p dans vertices
 	public ArrayList<ColoredNode> whiteNeighbor(ColoredNode p, ArrayList<ColoredNode> vertices, int edgeThreshold) {
 		ArrayList<ColoredNode> result = new ArrayList<ColoredNode>();
 		for (ColoredNode point : vertices)
@@ -388,6 +388,7 @@ public class DefaultTeam {
 		return result;
 	}
 
+	// trouve le noeud de degre max dans graphe
 	public Point findMax(ArrayList<Point> graphe, int edgeThreshold) {
 		int max = 0;
 		Point res = graphe.get(0);
@@ -400,6 +401,7 @@ public class DefaultTeam {
 		return res;
 	}
 
+	// trouve le noeud de degre min dans graphe
 	public Point findMin(ArrayList<Point> graphe, int edgeThreshold) {
 		int min = Integer.MAX_VALUE;
 		Point res = graphe.get(0);
@@ -470,5 +472,14 @@ public class DefaultTeam {
 		} catch (FileNotFoundException e) {
 			System.err.println("I/O exception: unable to create " + filename);
 		}
+	}
+
+	public ArrayList<Point> calculSteiner(ArrayList<Point> points, ArrayList<Point> sol, int edgeTreshold) {
+		Steiner steiner = new Steiner();
+		ArrayList<Point> res = steiner.calculSteiner(points, edgeTreshold, sol);
+		if (res.size() == 0) {
+			return sol;
+		}
+		return res;
 	}
 }
